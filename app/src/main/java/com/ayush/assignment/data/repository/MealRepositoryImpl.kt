@@ -2,10 +2,12 @@ package com.ayush.assignment.data.repository
 
 import com.ayush.assignment.core.domain.DataError
 import com.ayush.assignment.core.domain.Result
+import com.ayush.assignment.data.mapper.toDetailDomain
 import com.ayush.assignment.data.mapper.toDomain
 import com.ayush.assignment.data.remote.MealApi
 import com.ayush.assignment.domain.model.Category
 import com.ayush.assignment.domain.model.Meal
+import com.ayush.assignment.domain.model.MealDetail
 import com.ayush.assignment.domain.model.MealSummary
 import com.ayush.assignment.domain.repository.MealRepository
 import kotlinx.coroutines.Dispatchers
@@ -57,4 +59,21 @@ class MealRepositoryImpl(
             emit(Result.Error(DataError.Remote.UNKNOWN))
         }
     }.flowOn(Dispatchers.IO)
+
+    override fun getMealDetails(id: String): Flow<Result<MealDetail, DataError>> = flow {
+        try {
+            val response = api.getMealDetails(id)
+            val meal = response.meals.firstOrNull()
+            if (meal != null) {
+                emit(Result.Success(meal.toDetailDomain()))
+            } else {
+                emit(Result.Error(DataError.Remote.SERIALIZATION))
+            }
+        } catch (e: IOException) {
+            emit(Result.Error(DataError.Remote.NO_INTERNET))
+        } catch (e: Exception) {
+            emit(Result.Error(DataError.Remote.UNKNOWN))
+        }
+    }.flowOn(Dispatchers.IO)
+
 }

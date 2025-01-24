@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.ayush.assignment.core.domain.DataError
 import com.ayush.assignment.domain.model.MealSummary
-import kotlin.error
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,17 +49,18 @@ fun HomeScreen(
     onMealClick: (String) -> Unit
 ) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { 
                     Text(
-                        "Meal Categories",
+                        "Meals & Recipes",
                         style = MaterialTheme.typography.titleLarge
                     ) 
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -75,15 +75,15 @@ fun HomeScreen(
                     selectedTabIndex = uiState.categories.indexOfFirst { it.name == uiState.selectedCategory }
                         .coerceAtLeast(0),
                     edgePadding = 16.dp,
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary,
                     indicator = { tabPositions ->
                         TabRowDefaults.Indicator(
                             modifier = Modifier.tabIndicatorOffset(tabPositions[
                                 uiState.categories.indexOfFirst { it.name == uiState.selectedCategory }
                                     .coerceAtLeast(0)
                             ]),
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 ) {
@@ -145,9 +145,9 @@ private fun ShimmerMealItem() {
     )
 
     val shimmerColorShades = listOf(
-        Color.LightGray.copy(alpha = 0.9f),
-        Color.LightGray.copy(alpha = 0.4f),
-        Color.LightGray.copy(alpha = 0.9f)
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
     )
 
     val brush = Brush.linearGradient(
@@ -161,7 +161,7 @@ private fun ShimmerMealItem() {
             .fillMaxWidth()
             .height(200.dp),
         shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -182,8 +182,11 @@ private fun MealItem(
             .height(200.dp),
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = 8.dp
+            defaultElevation = 2.dp,
+            pressedElevation = 4.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -202,9 +205,9 @@ private fun MealItem(
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.7f)
+                                Color.Black.copy(alpha = 0.6f)
                             ),
-                            startY = 300f
+                            startY = 200f
                         )
                     )
             )

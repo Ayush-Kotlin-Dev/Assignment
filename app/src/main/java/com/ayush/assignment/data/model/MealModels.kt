@@ -35,6 +35,18 @@ data class MealDto(
     val instructions: String,
     @SerialName("strMealThumb")
     val thumbnailUrl: String,
+    @SerialName("strYoutube")
+    val youtubeUrl: String? = null,
+    @SerialName("strIngredient1") val ingredient1: String? = null,
+    @SerialName("strIngredient2") val ingredient2: String? = null,
+    @SerialName("strIngredient3") val ingredient3: String? = null,
+    @SerialName("strIngredient4") val ingredient4: String? = null,
+    @SerialName("strIngredient5") val ingredient5: String? = null,
+    @SerialName("strMeasure1") val measure1: String? = null,
+    @SerialName("strMeasure2") val measure2: String? = null,
+    @SerialName("strMeasure3") val measure3: String? = null,
+    @SerialName("strMeasure4") val measure4: String? = null,
+    @SerialName("strMeasure5") val measure5: String? = null,
 )
 
 @Serializable
