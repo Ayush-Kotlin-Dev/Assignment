@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -54,9 +55,9 @@ import com.ayush.assignment.domain.model.MealSummary
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    onCategorySelected: (String) -> Unit,
+    onMealClick: (String) -> Unit,
     onRetry: () -> Unit,
-    onMealClick: (String) -> Unit
+    onTabSelected: (Int) -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -80,37 +81,19 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (uiState.categories.isNotEmpty()) {
-                ScrollableTabRow(
-                    selectedTabIndex = uiState.categories.indexOfFirst { it.name == uiState.selectedCategory }
-                        .coerceAtLeast(0),
-                    edgePadding = 16.dp,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    indicator = { tabPositions ->
-                        TabRowDefaults.Indicator(
-                            modifier = Modifier.tabIndicatorOffset(tabPositions[
-                                uiState.categories.indexOfFirst { it.name == uiState.selectedCategory }
-                                    .coerceAtLeast(0)
-                            ]),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                ) {
-                    uiState.categories.forEach { category ->
-                        Tab(
-                            selected = category.name == uiState.selectedCategory,
-                            onClick = { onCategorySelected(category.name) },
-                            text = { 
-                                Text(
-                                    category.name,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                ) 
-                            }
-                        )
-                    }
-                }
+            TabRow(
+                selectedTabIndex = uiState.selectedTab
+            ) {
+                Tab(
+                    selected = uiState.selectedTab == 0,
+                    onClick = { onTabSelected(0) },
+                    text = { Text("Seafood") }
+                )
+                Tab(
+                    selected = uiState.selectedTab == 1,
+                    onClick = { onTabSelected(1) },
+                    text = { Text("Dessert") }
+                )
             }
 
             when {
@@ -119,10 +102,17 @@ fun HomeScreen(
                     error = uiState.error,
                     onRetry = onRetry
                 )
-                else -> MealsList(
-                    meals = uiState.meals,
-                    onMealClick = onMealClick
-                )
+                else -> {
+                    val meals = when(uiState.selectedTab) {
+                        0 -> uiState.seafoodMeals
+                        1 -> uiState.dessertMeals
+                        else -> emptyList()
+                    }
+                    MealsList(
+                        meals = meals,
+                        onMealClick = onMealClick
+                    )
+                }
             }
         }
     }

@@ -65,11 +65,12 @@ fun NavigationGraph(
 
             HomeScreen(
                 uiState = uiState,
-                onCategorySelected = viewModel::loadMealsForCategory,
                 onRetry = viewModel::retry,
                 onMealClick = { mealId ->
                     navController.navigate(Screen.MealDetail.createRoute(mealId))
-                }
+                },
+                onTabSelected = viewModel::onTabSelected
+
             )
         }
 

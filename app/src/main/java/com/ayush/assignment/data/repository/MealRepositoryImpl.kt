@@ -10,70 +10,40 @@ import com.ayush.assignment.domain.model.Meal
 import com.ayush.assignment.domain.model.MealDetail
 import com.ayush.assignment.domain.model.MealSummary
 import com.ayush.assignment.domain.repository.MealRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import io.reactivex.rxjava3.core.Single
 import java.io.IOException
 
 class MealRepositoryImpl(
     private val api: MealApi
 ) : MealRepository {
 
-    override fun getRandomMeal(): Flow<Result<Meal, DataError>> = flow {
-        try {
-            val response = api.getRandomMeal()
-            val meal = response.meals.firstOrNull()
-            if (meal != null) {
-                emit(Result.Success(meal.toDomain()))
-            } else {
-                emit(Result.Error(DataError.Remote.SERIALIZATION))
+
+    override fun getMealsByCategory(category: String): Single<Result<List<MealSummary>, DataError>> {
+        return wrapApiCall(
+            api.getMealsByCategory(category)
+                .map { response -> response.meals.map { it.toDomain() } }
+        )
+    }
+
+
+    override fun getMealDetails(id: String): Single<Result<MealDetail, DataError>> {
+        return wrapApiCall(
+            api.getMealDetails(id)
+                .map { response ->
+                    response.meals.firstOrNull()?.toDetailDomain() 
+                        ?: throw IOException("No meal found")
+                }
+        )
+    }
+
+    private fun <T : Any> wrapApiCall(apiCall: Single<T>): Single<Result<T, DataError>> {
+        return apiCall
+            .map<Result<T, DataError>> { Result.Success(it) }
+            .onErrorReturn { error ->
+                when (error) {
+                    is IOException -> Result.Error(DataError.Remote.NO_INTERNET)
+                    else -> Result.Error(DataError.Remote.UNKNOWN)
+                }
             }
-        } catch (e: IOException) {
-            emit(Result.Error(DataError.Remote.NO_INTERNET))
-        } catch (e: Exception) {
-            emit(Result.Error(DataError.Remote.UNKNOWN))
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override fun getMealsByCategory(category: String): Flow<Result<List<MealSummary>, DataError>> = flow {
-        try {
-            val response = api.getMealsByCategory(category)
-            val meals = response.meals.map { mealDto -> mealDto.toDomain() }
-            emit(Result.Success(meals))
-        } catch (e: IOException) {
-            emit(Result.Error(DataError.Remote.NO_INTERNET))
-        } catch (e: Exception) {
-            emit(Result.Error(DataError.Remote.UNKNOWN))
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override fun getCategories(): Flow<Result<List<Category>, DataError>> = flow {
-        try {
-            val response = api.getCategories()
-            val categories = response.categories.map { categoryDto -> categoryDto.toDomain() }
-            emit(Result.Success(categories))
-        } catch (e: IOException) {
-            emit(Result.Error(DataError.Remote.NO_INTERNET))
-        } catch (e: Exception) {
-            emit(Result.Error(DataError.Remote.UNKNOWN))
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override fun getMealDetails(id: String): Flow<Result<MealDetail, DataError>> = flow {
-        try {
-            val response = api.getMealDetails(id)
-            val meal = response.meals.firstOrNull()
-            if (meal != null) {
-                emit(Result.Success(meal.toDetailDomain()))
-            } else {
-                emit(Result.Error(DataError.Remote.SERIALIZATION))
-            }
-        } catch (e: IOException) {
-            emit(Result.Error(DataError.Remote.NO_INTERNET))
-        } catch (e: Exception) {
-            emit(Result.Error(DataError.Remote.UNKNOWN))
-        }
-    }.flowOn(Dispatchers.IO)
-
+    }
 }

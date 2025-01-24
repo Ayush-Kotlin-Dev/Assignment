@@ -6,6 +6,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import java.util.concurrent.TimeUnit
 
 object NetworkModule {
@@ -29,6 +30,7 @@ object NetworkModule {
     val mealDbRetrofit: Retrofit = Retrofit.Builder()
         .baseUrl(MEALS_BASE_URL)
         .client(okHttpClient)
+        .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 }

@@ -6,14 +6,9 @@ import com.ayush.assignment.domain.model.Category
 import com.ayush.assignment.domain.model.Meal
 import com.ayush.assignment.domain.model.MealDetail
 import com.ayush.assignment.domain.model.MealSummary
-import kotlinx.coroutines.flow.Flow
+import io.reactivex.rxjava3.core.Single
 
 interface MealRepository {
-    fun getRandomMeal(): Flow<Result<Meal, DataError>>// Not in use
-    fun getMealsByCategory(category: String): Flow<Result<List<MealSummary>, DataError>>
-    fun getCategories(): Flow<Result<List<Category>, DataError>>
-
-    //Detailed Screen
-    fun getMealDetails(id: String): Flow<Result<MealDetail, DataError>>
-
+    fun getMealsByCategory(category: String): Single<Result<List<MealSummary>, DataError>>
+    fun getMealDetails(id: String): Single<Result<MealDetail, DataError>>
 }

@@ -31,7 +31,7 @@ fun MealDetailScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            LargeTopAppBar(
+            TopAppBar(
                 title = { Text(uiState.meal?.name ?: "") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -41,7 +41,8 @@ fun MealDetailScreen(
                 colors = TopAppBarDefaults.largeTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                ),
+                modifier = Modifier.padding(top = 12.dp)
             )
         }
     ) { padding ->

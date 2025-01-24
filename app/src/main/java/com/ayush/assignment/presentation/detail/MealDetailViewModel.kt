@@ -3,6 +3,7 @@ package com.ayush.assignment.presentation.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ayush.assignment.core.domain.DataError
 import com.ayush.assignment.core.domain.Result
 import com.ayush.assignment.domain.usecase.GetMealDetailsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,21 +30,29 @@ class MealDetailViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            getMealDetailsUseCase(mealId).collect { result ->
-                _uiState.update {
+            getMealDetailsUseCase(mealId)
+                .subscribe({ result ->
                     when (result) {
-                        is Result.Success -> it.copy(
-                            meal = result.data,
-                            isLoading = false,
-                            error = null
-                        )
-                        is Result.Error -> it.copy(
-                            isLoading = false,
-                            error = result.error
-                        )
+                        is Result.Success -> {
+                            _uiState.update { state ->
+                                state.copy(
+                                    isLoading = false,
+                                    error = null,
+                                    meal = result.data
+                                )
+                            }
+                        }
+                        is Result.Error -> {
+                            _uiState.update { state ->
+                                state.copy(
+                                    isLoading = false,
+                                    error = result.error,
+                                    meal = null
+                                )
+                            }
+                        }
                     }
-                }
-            }
+                })
         }
     }
 
