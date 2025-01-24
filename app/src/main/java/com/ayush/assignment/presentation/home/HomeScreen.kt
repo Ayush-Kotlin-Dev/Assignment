@@ -1,5 +1,6 @@
 package com.ayush.assignment.presentation.home
 
+import android.app.Application
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,14 +29,23 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
 import coil.compose.AsyncImage
 import com.ayush.assignment.core.domain.DataError
 import com.ayush.assignment.domain.model.MealSummary
@@ -133,27 +143,30 @@ private fun LoadingContent() {
 
 @Composable
 private fun ShimmerMealItem() {
+    val shimmerColors = listOf(
+        Color.LightGray.copy(alpha = 0.6f),
+        Color.LightGray.copy(alpha = 0.2f),
+        Color.LightGray.copy(alpha = 0.6f)
+    )
+
     val transition = rememberInfiniteTransition(label = "Shimmer")
-    val translateAnim = transition.animateFloat(
-        initialValue = 0f,
+    val translateAnimation = transition.animateFloat(
+        initialValue = -1000f,
         targetValue = 1000f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+            animation = tween(
+                durationMillis = 1200,
+                easing = FastOutSlowInEasing
+            ),
             repeatMode = RepeatMode.Restart
         ),
         label = "Shimmer"
     )
 
-    val shimmerColorShades = listOf(
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-    )
-
     val brush = Brush.linearGradient(
-        colors = shimmerColorShades,
-        start = Offset(translateAnim.value - 1000f, translateAnim.value - 1000f),
-        end = Offset(translateAnim.value, translateAnim.value)
+        colors = shimmerColors,
+        start = Offset(x = translateAnimation.value - 500f, y = 0f),
+        end = Offset(x = translateAnimation.value + 500f, y = 0f)
     )
 
     Card(
@@ -163,10 +176,38 @@ private fun ShimmerMealItem() {
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(brush)
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Background shimmer
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(brush)
+            )
+
+            // Content shimmer
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                // Title shimmer
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(20.dp)
+                        .background(brush)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                // Subtitle shimmer
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f)
+                        .height(16.dp)
+                        .background(brush)
+                )
+            }
+        }
     }
 }
 
@@ -175,6 +216,8 @@ private fun MealItem(
     meal: MealSummary,
     onClick: () -> Unit
 ) {
+    var isLoading by remember { mutableStateOf(true) }
+    
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -190,11 +233,19 @@ private fun MealItem(
         )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            // Image loading shimmer
+            if (isLoading) {
+                ImageLoadingShimmer()
+            }
+            
+            // Actual image
             AsyncImage(
                 model = meal.thumbnailUrl,
                 contentDescription = meal.name,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                onLoading = { isLoading = true },
+                onSuccess = { isLoading = false }
             )
             
             // Gradient overlay
@@ -224,6 +275,41 @@ private fun MealItem(
             )
         }
     }
+}
+
+@Composable
+private fun ImageLoadingShimmer() {
+    val shimmerColors = listOf(
+        Color.LightGray.copy(alpha = 0.6f),
+        Color.LightGray.copy(alpha = 0.2f),
+        Color.LightGray.copy(alpha = 0.6f)
+    )
+
+    val transition = rememberInfiniteTransition(label = "Image Shimmer")
+    val translateAnimation = transition.animateFloat(
+        initialValue = -1000f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1200,
+                easing = FastOutSlowInEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "Image Shimmer"
+    )
+
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(x = translateAnimation.value - 500f, y = 0f),
+        end = Offset(x = translateAnimation.value + 500f, y = 0f)
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(brush)
+    )
 }
 
 @Composable

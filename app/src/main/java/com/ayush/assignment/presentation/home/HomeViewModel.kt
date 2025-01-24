@@ -58,6 +58,9 @@ class HomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, selectedCategory = category) }
 
+            // Add a small delay to make the loading state more visible
+//            kotlinx.coroutines.delay(300) for testing
+
             getMealsUseCase(category).collect { result ->
                 when (result) {
                     is Result.Success -> {
